@@ -29,9 +29,17 @@ var id = '5a3b8f415c3f08232c0bfe3f';
 //    console.log('Todo By Id',todo);
 //}).catch((e) => console.log(e));
 
-    User.findById(id).then((user) => {
+//    User.findById(id).then((user) => {
+//    if(!user){
+//        return console.log('Id not found');
+//    }
+//    console.log('User By ID', user);
+//}).catch((e) => console.log(e));
+
+//Both the above and below formats are correct for error handling
+    User.findById("5a3b8f415c3f08232c0bfe3f").then((user) => {
     if(!user){
         return console.log('Id not found');
     }
     console.log('User By ID', user);
-}).catch((e) => console.log(e));
+}, (e) => {console.log(e); console.log("Id is invalid")});
