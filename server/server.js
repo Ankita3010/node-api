@@ -95,6 +95,28 @@ app.patch('/todos/:id', (req, res) => {
     })
 })
 
+app.post('/users', (req, res) => {
+    var body = _.pick(req.body, ['email', 'password']);
+    
+    var user = new User({
+        email: body.email,
+        password: body.password
+    }); 
+    //var user = new User(body), as body is already the desired object
+    
+    //Model and Instance methods
+   
+    
+    user.save().then(() => {
+        return user.generateAuthToken();
+//        res.send(user);
+    }).then((token) => {
+        res.header('x-auth', token).send(user);
+    }).catch((e) => {
+        res.status(400).send(e);
+    });
+});
+
 app.listen(port, () => {
     console.log(`Started on port ${port}`);
 });
