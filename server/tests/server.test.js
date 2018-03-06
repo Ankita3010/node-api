@@ -1,4 +1,5 @@
 const expect = require('expect');
+const expects = require('chai').expect;
 const request = require('supertest');
 const {ObjectID} =require('mongodb');
 
@@ -224,7 +225,7 @@ describe('POST /users', () => {
                 expect(user).toBeTruthy();
                 expect(user.password).not.toBe(password);
                 done();
-            });
+            }).catch((e) => done(e));
         });
     });
     
@@ -249,4 +250,55 @@ describe('POST /users', () => {
             .expect(400)
             .end(done);
     });
-})
+});
+
+describe('POST /users/login', () => {
+    it('should login user and return auth token', (done) => {
+        request(app)
+            .post('/users/login')
+            .send({
+            email: users[1].email,
+            password: users[1].password
+        })
+            .expect(200)
+            .expect((res) => {
+            expect(res.headers['x-auth']).toBeTruthy;
+        })
+            .end((err, res) => {
+            if(err){
+                return done(err);
+            }
+            
+            User.findById(users[1]._id).then((user) =>{
+                expects(user.tokens[0]).to.include({
+                    access: 'auth',
+                    token: res.headers['x-auth']
+                });
+                done();
+            }).catch((err) => done(err));
+        });
+    });
+    
+    it('should return invalid login', (done) => {
+        request(app)
+            .post('/users/login')
+            .send({
+            email: users[1].email,
+            passsword: '12345678'
+        })
+            .expect(400)
+            .expect((res) => {
+            expects(res.header['x-auth']).to.not.exist;
+        })
+            .end((err, res) => {
+            if(err){
+                return done(err);
+            }
+            
+            User.findById(users[1]._id).then((user) => {
+                expects(user.tokens.length).to.equal(0);
+            done();
+        }).catch((err) => done(err));
+    });
+});
+});
